@@ -35,36 +35,6 @@ Run the main script:
 ./.venv/bin/python main.py
 ```
 
----
-
-## Web (Run On A Domain)
-
-This repo also includes a browser-based version (see [index.html](index.html)) that runs directly in the browser using the webcam.
-
-Important:
-- Browsers only allow webcam access on **HTTPS** (or `http://localhost`).
-
-### Run locally
-
-From the repo root:
-
-```bash
-python3 -m http.server 8000
-```
-
-Then open:
-- `http://localhost:8000/`
-
-### Deploy to a domain
-
-Any static hosting works. Configure the host to publish the repository root (the folder containing `index.html`).
-
-- **Netlify**: set *Publish directory* to `.`
-- **Vercel**: deploy as a static site from the repo root
-- **GitHub Pages**: set Pages source to the root (or use a workflow)
-
-Once deployed, open your domain and click **Start camera**.
-
 Note (macOS Apple Silicon): you may see one-time Objective-C warnings about duplicate OpenCV classes when importing MediaPipe + OpenCV together. The app should still run; if you ever see random crashes, tell me and I’ll help you apply a stricter workaround.
 
 ## Controls
@@ -74,8 +44,12 @@ Note (macOS Apple Silicon): you may see one-time Objective-C warnings about dupl
     - `Q`: Quit
     - `C`: Clear Canvas
     - `S`: Save Drawing
+    - `P`: Toggle low-power mode
     - `F`: Free draw tool
     - `L`: Line tool
     - `R`: Rectangle tool
     - `O`: Circle tool
     - `+` / `-`: Increase / decrease brush thickness sensitivity
+
+Extra gesture:
+- **Thumbs-up hold (~1s)**: Toggle HUD/clean mode
