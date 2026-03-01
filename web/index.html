@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Air Draw System (Web)</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header class="header">
+      <h1 class="title">Air Draw System</h1>
+      <div class="controls">
+        <button id="startBtn" type="button">Start camera</button>
+        <button id="clearBtn" type="button" disabled>Clear</button>
+        <button id="saveBtn" type="button" disabled>Save</button>
+      </div>
+    </header>
+
+    <main class="main">
+      <div class="stage" aria-label="Camera and drawing canvas">
+        <video id="video" playsinline></video>
+        <canvas id="overlay"></canvas>
+        <div id="hud" class="hud" aria-live="polite"></div>
+      </div>
+
+      <section class="help">
+        <h2>Gestures</h2>
+        <ul>
+          <li><strong>1 finger</strong>: draw</li>
+          <li><strong>0 fingers</strong>: eraser (hold ~2s to clear)</li>
+          <li><strong>2–5 fingers</strong>: hold briefly to change color</li>
+        </ul>
+        <h2>Keyboard</h2>
+        <ul>
+          <li><kbd>c</kbd>: clear</li>
+          <li><kbd>s</kbd>: save</li>
+          <li><kbd>+</kbd>/<kbd>-</kbd>: thickness scale</li>
+        </ul>
+        <p class="note">
+          Camera access requires <strong>HTTPS</strong> (or localhost). Deploy this folder to your domain using GitHub Pages,
+          Netlify, or Vercel.
+        </p>
+      </section>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
