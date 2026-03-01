@@ -1,6 +1,3 @@
-// Minimal in-browser port of the Python OpenCV app.
-// Uses MediaPipe Tasks Vision (HandLandmarker) and draws to a canvas overlay.
-
 import {
   FilesetResolver,
   HandLandmarker,
@@ -19,7 +16,7 @@ const COLORS_BY_FINGERS = {
   4: { rgb: [255, 255, 255], name: "White" },
   3: { rgb: [255, 0, 0], name: "Red" },
   2: { rgb: [0, 0, 0], name: "Black" },
-  1: { rgb: [0, 128, 255], name: "Blue" },
+  1: { rgb: [0, 0, 255], name: "Blue" },
 };
 
 const videoEl = document.getElementById("video");
@@ -34,7 +31,7 @@ const ctx = canvasEl.getContext("2d", { willReadFrequently: false });
 let handLandmarker = null;
 let running = false;
 
-let canvasBitmap = null; // Offscreen canvas state for persistent strokes
+let canvasBitmap = null;
 let canvasCtx = null;
 
 let prevX = 0;
@@ -79,7 +76,6 @@ function ensureCanvases() {
   const h = videoEl.videoHeight;
   if (!w || !h) return false;
 
-  // Match the overlay canvas to the video resolution for clean drawing.
   if (canvasEl.width !== w || canvasEl.height !== h) {
     canvasEl.width = w;
     canvasEl.height = h;
@@ -99,8 +95,6 @@ function ensureCanvases() {
 }
 
 function countFingers(landmarks, handednessLabel) {
-  // Uses MediaPipe landmark indices.
-  // We mirror X coordinates to match the mirrored video display.
   const w = videoEl.videoWidth;
   const h = videoEl.videoHeight;
 
@@ -113,21 +107,18 @@ function countFingers(landmarks, handednessLabel) {
 
   const fingers = [];
 
-  // Thumb: compare tip.x vs IP.x, but account for handedness.
-  const thumbTip = px(landmarks[tipIds[0]]);
-  const thumbIp = px(landmarks[tipIds[0] - 1]);
-
+  const thumbTipX = landmarks[tipIds[0]].x;
+  const thumbIpX = landmarks[tipIds[0] - 1].x;
   if (handednessLabel === "Right") {
-    fingers.push(thumbTip.x < thumbIp.x ? 1 : 0);
+    fingers.push(thumbTipX < thumbIpX ? 1 : 0);
   } else {
-    fingers.push(thumbTip.x > thumbIp.x ? 1 : 0);
+    fingers.push(thumbTipX > thumbIpX ? 1 : 0);
   }
 
-  // Other fingers: tip.y above PIP.y => finger up
   for (let i = 1; i < 5; i++) {
-    const tip = px(landmarks[tipIds[i]]);
-    const pip = px(landmarks[tipIds[i] - 2]);
-    fingers.push(tip.y < pip.y ? 1 : 0);
+    const tipY = landmarks[tipIds[i]].y;
+    const pipY = landmarks[tipIds[i] - 2].y;
+    fingers.push(tipY < pipY ? 1 : 0);
   }
 
   const count = fingers.reduce((a, b) => a + b, 0);
@@ -139,11 +130,13 @@ async function initHandLandmarker() {
     "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm"
   );
 
-  handLandmarker = await HandLandmarker.createFromOptions(vision, {
+  const modelAssetPath =
+    "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
+
+  const buildOptions = (delegate) => ({
     baseOptions: {
-      modelAssetPath:
-        "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
-      delegate: "GPU",
+      modelAssetPath,
+      delegate,
     },
     runningMode: "VIDEO",
     numHands: 1,
@@ -151,6 +144,12 @@ async function initHandLandmarker() {
     minHandPresenceConfidence: 0.7,
     minTrackingConfidence: 0.5,
   });
+
+  try {
+    handLandmarker = await HandLandmarker.createFromOptions(vision, buildOptions("GPU"));
+  } catch {
+    handLandmarker = await HandLandmarker.createFromOptions(vision, buildOptions("CPU"));
+  }
 }
 
 async function startCamera() {
@@ -174,7 +173,6 @@ function saveImage() {
   out.height = canvasBitmap.height;
   const outCtx = out.getContext("2d");
 
-  // For saved output, keep the drawing as the user sees it (mirrored).
   outCtx.translate(out.width, 0);
   outCtx.scale(-1, 1);
   outCtx.drawImage(canvasBitmap, 0, 0);
@@ -193,10 +191,8 @@ function drawHud({ fps, mode, tool, thickness, fingers, colorName }) {
 function drawOverlay() {
   if (!ensureCanvases()) return;
 
-  // Clear overlay and composite the persistent canvas on top.
   ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
 
-  // Mirror overlay to match video mirroring.
   ctx.save();
   ctx.translate(canvasEl.width, 0);
   ctx.scale(-1, 1);
@@ -205,7 +201,6 @@ function drawOverlay() {
 }
 
 function drawEraserCursor(x, y) {
-  // x,y are already mirrored pixel coords in the source coordinate system.
   ctx.save();
   ctx.translate(canvasEl.width, 0);
   ctx.scale(-1, 1);
@@ -300,7 +295,6 @@ async function renderLoop() {
   let drawingGesture = false;
   let erasingGesture = false;
 
-  // Composite current drawing first.
   drawOverlay();
 
   const now = Date.now() / 1000;
@@ -400,14 +394,12 @@ async function renderLoop() {
       drawCursorDot(filteredX, filteredY, selectedColor.rgb);
     }
   } else {
-    // No hand: reset stroke continuity.
     prevX = 0;
     prevY = 0;
     colorCandidate = null;
     eraserModeActive = false;
   }
 
-  // On active drawing/erasing, cancel pending color holds.
   if (drawingGesture || erasingGesture) {
     colorCandidate = null;
   }

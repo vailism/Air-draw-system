@@ -40,10 +40,6 @@ COLOR_NAMES = {
     (255, 0, 0): "Blue"
 }
 def count_fingers(landmarks, hand_label="Right"):
-    """
-    Count raised fingers and return the count and status of each finger.
-    hand_label: 'Right' or 'Left' as reported by MediaPipe (for the mirrored image).
-    """
     tips = [4, 8, 12, 16, 20] 
     fingers = [] 
     thumb_tip_x = landmarks[tips[0]].x

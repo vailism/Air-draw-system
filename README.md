@@ -39,7 +39,7 @@ Run the main script:
 
 ## Web (Run On A Domain)
 
-This repo also includes a browser-based version in [web/](web/) that runs directly in the browser using the webcam.
+This repo also includes a browser-based version (see [index.html](index.html)) that runs directly in the browser using the webcam.
 
 Important:
 - Browsers only allow webcam access on **HTTPS** (or `http://localhost`).
@@ -53,15 +53,15 @@ python3 -m http.server 8000
 ```
 
 Then open:
-- `http://localhost:8000/web/`
+- `http://localhost:8000/`
 
 ### Deploy to a domain
 
-Any static hosting works. Configure the host to publish the `web/` folder.
+Any static hosting works. Configure the host to publish the repository root (the folder containing `index.html`).
 
-- **Netlify**: set *Publish directory* to `web`
-- **Vercel**: set *Root Directory* to `web` (or deploy as a static site)
-- **GitHub Pages**: easiest is to deploy the `web/` folder via a Pages workflow (or move/copy `web/` contents into `/docs` and set Pages to `/docs`).
+- **Netlify**: set *Publish directory* to `.`
+- **Vercel**: deploy as a static site from the repo root
+- **GitHub Pages**: set Pages source to the root (or use a workflow)
 
 Once deployed, open your domain and click **Start camera**.
 
